@@ -115,35 +115,36 @@ artist_info = {
 # Upload painting
 uploaded_file = st.file_uploader("Upload a painting", type=["jpg", "jpeg", "png"])
 
-if uploaded_file:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Painting", use_container_width=True)
+# Predict and get top-3
+image_resized = image.resize((512, 512))
+img_array = np.array(image_resized) / 255.0
+img_array = img_array[np.newaxis, ...]
+prediction = model.predict(img_array)[0]
+top_indices = prediction.argsort()[::-1][:3]
 
-    # Predict
-    image_resized = image.resize((324, 324))
-    img_array = np.array(image_resized) / 255.0
-    img_array = img_array[np.newaxis, ...]
-    prediction = model.predict(img_array)[0]
-    top_indices = prediction.argsort()[::-1][:3]
+# Unified layout (no dividers, same font)
+for idx, i in enumerate(top_indices):
+    name = class_names[i].replace("_", " ")
+    conf = prediction[i] * 100
+    info = artist_info.get(class_names[i], {})
+    who = info.get('who', '')
+    style = info.get('period_style', '')
+    example = ', '.join(info.get('examples', []))
 
-    # Show top-1 prediction with details
-    top_1 = top_indices[0]
-    name_1 = class_names[top_1]
-    conf_1 = prediction[top_1] * 100
-    info_1 = artist_info.get(name_1, {})
+    if idx == 0:
+        st.markdown(f"""
+        <div style="text-align:center; margin-top:20px; font-family: 'Inter', sans-serif;">
+            <p style="font-size:18px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
+            <p style="font-size:16px; color:#555;">{who}</p>
+            <p style="font-size:15px; font-style:italic; color:#777;">{style}</p>
+            <p style="font-size:15px; font-style:italic; color:#999;">Famous Work: {example}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+        <div style="text-align:center; margin-top:10px; font-family: 'Inter', sans-serif;">
+            <
 
-    st.markdown('<div class="artist-label">🎯 Most Likely:</div>', unsafe_allow_html=True)
-    st.markdown(f"<div class='artist-label'><strong>{name_1.replace('_', ' ')}</strong> — {conf_1:.2f}%</div>", unsafe_allow_html=True)
-    st.markdown(f"*{info_1.get('who', 'N/A')}*")
-    st.markdown(f"_Period & Style: {info_1.get('period_style', 'N/A')}_")
-    st.markdown(f"_Famous Work: {', '.join(info_1.get('examples', []))}_")
-
-    # Show other top artists with minimal info
-    st.markdown('<div class="artist-label">🧠 Other Likely Artists:</div>', unsafe_allow_html=True)
-    for i in top_indices[1:]:
-        name = class_names[i]
-        conf = prediction[i] * 100
-        st.markdown(f"• {name.replace('_', ' ')} — {conf:.2f}%")
 
 # Sidebar
 with st.sidebar:
