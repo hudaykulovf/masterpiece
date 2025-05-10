@@ -7,18 +7,48 @@ from PIL import Image
 # Page setup
 st.set_page_config(page_title="Masterpiece ID – AI Artist Classifier", layout="centered")
 
-# Custom styling
+# Custom CSS styling
 st.markdown("""
 <style>
-.title { font-size: 36px; font-family: 'Georgia'; text-align: center; margin-bottom: 0px; }
-.subtitle { font-size: 18px; font-style: italic; text-align: center; color: #666; margin-top: 0px; }
-.artist-label { font-size: 22px; text-align: center; padding: 10px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin-top: 20px; font-family: 'Georgia'; }
-.stImage > img { border: 6px solid #ddd; border-radius: 4px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+body, html {
+    font-family: 'Helvetica', 'Arial', sans-serif;
+}
+
+.title {
+    font-size: 36px;
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    text-align: center;
+    margin-bottom: 0px;
+}
+
+.subtitle {
+    font-size: 18px;
+    font-style: italic;
+    text-align: center;
+    color: #666;
+    margin-top: 0px;
+}
+
+.artist-label {
+    font-size: 22px;
+    text-align: center;
+    padding: 10px 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    margin-top: 20px;
+    font-family: 'Helvetica', 'Arial', sans-serif;
+}
+
+.stImage > img {
+    border: 6px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
 </style>
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">🎨 Masterpiece ID</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">AI-powered gallery that identifies the artist behind the painting</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">AI-powered app that predicts the artist behind the painting</div>', unsafe_allow_html=True)
 
 # Load model and class names
 @st.cache_resource
@@ -30,87 +60,84 @@ def load_model():
 
 model, class_names = load_model()
 
-# Artist info dictionary
+# Concise artist info
 artist_info = {
     "Vincent_van_Gogh": {
         "who": "Dutch Post-Impressionist painter",
         "period_style": "Late 19th century – Post-Impressionism",
-
+        "examples": ["Starry Night"]
     },
     "Pablo_Picasso": {
-        "who": "Spanish painter, sculptor, and co-founder of Cubism",
-        "period_style": "Early to mid 20th century – Cubism, Surrealism",
-
+        "who": "Spanish painter and Cubism co-founder",
+        "period_style": "Early 20th century – Cubism, Surrealism",
+        "examples": ["Guernica"]
     },
     "Claude_Monet": {
-        "who": "French painter and founder of the Impressionist movement",
+        "who": "French painter and founder of Impressionism",
         "period_style": "Late 19th to early 20th century – Impressionism",
-
+        "examples": ["Water Lilies"]
     },
     "Salvador_Dali": {
-        "who": "Spanish surrealist known for dreamlike visuals and eccentricity",
+        "who": "Spanish Surrealist known for dreamlike visuals",
         "period_style": "20th century – Surrealism",
-
+        "examples": ["The Persistence of Memory"]
     },
     "Rembrandt": {
         "who": "Dutch Baroque painter and printmaker",
         "period_style": "17th century – Baroque",
-
+        "examples": ["The Night Watch"]
     },
     "Marc_Chagall": {
-        "who": "Belarusian-French modernist painter",
+        "who": "French modernist with folkloric dreamlike themes",
         "period_style": "20th century – Expressionism, Surrealism",
-
+        "examples": ["I and the Village"]
     },
     "Paul_Gauguin": {
-        "who": "French Post-Impressionist painter",
-        "period_style": "Late 19th century – Symbolism, Primitivism",
-
+        "who": "French Post-Impressionist focused on Tahitian themes",
+        "period_style": "Late 19th century – Symbolism",
+        "examples": ["Tahitian Women on the Beach"]
     },
     "Albrecht_Durer": {
-        "who": "German Renaissance painter and printmaker",
+        "who": "German Renaissance painter and engraver",
         "period_style": "15th–16th century – Northern Renaissance",
-        "famous_for": "Engravings, religious works, and anatomical precision",
-        "examples": ["Melencolia I", "Young Hare"]
+        "examples": ["Melencolia I"]
     },
     "Henri_Matisse": {
-        "who": "French artist known for Fauvism",
+        "who": "French Fauvist known for bold color and form",
         "period_style": "Early 20th century – Fauvism, Modernism",
-
+        "examples": ["The Dance"]
     },
     "Nicholas_Roerich": {
-        "who": "Russian painter, philosopher, and mystic",
+        "who": "Russian painter and mystic of Himalayan scenes",
         "period_style": "20th century – Symbolism, Spiritual Art",
-
+        "examples": ["The Himalayas"]
     }
 }
 
-# Upload image
+# Upload painting
 uploaded_file = st.file_uploader("Upload a painting", type=["jpg", "jpeg", "png"])
 
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
     st.image(image, caption="Uploaded Painting", use_container_width=True)
 
+    # Preprocess and predict
     image_resized = image.resize((512, 512))
     img_array = np.array(image_resized) / 255.0
     img_array = img_array[np.newaxis, ...]
-
     prediction = model.predict(img_array)[0]
-    top_indices = prediction.argsort()[::-1][:3]
+    top_index = prediction.argmax()
 
-    st.markdown('<div class="artist-label">🧠 Predicted Artist(s):</div>', unsafe_allow_html=True)
+    name = class_names[top_index]
+    confidence = prediction[top_index] * 100
+    info = artist_info.get(name, {})
 
-    for i in top_indices:
-        name = class_names[i]
-        confidence = prediction[i] * 100
-        info = artist_info.get(name, {})
-
-        st.markdown(f"<div class='artist-label'><strong>{name.replace('_', ' ')}</strong> — {confidence:.2f}%</div>", unsafe_allow_html=True)
-        st.markdown(f"**Who:** {info.get('who', 'N/A')}")
-        st.markdown(f"**Period & Style:** {info.get('period_style', 'N/A')}")
-        st.markdown(f"**Famous For:** {info.get('famous_for', 'N/A')}")
-        st.markdown(f"**Notable Works:** _{', '.join(info.get('examples', []))}_")
+    # Display most likely artist
+    st.markdown('<div class="artist-label">🎯 Most Likely:</div>', unsafe_allow_html=True)
+    st.markdown(f"<div class='artist-label'><strong>{name.replace('_', ' ')}</strong> — {confidence:.2f}%</div>", unsafe_allow_html=True)
+    st.markdown(f"*{info.get('who', 'N/A')}*")
+    st.markdown(f"_Period & Style: {info.get('period_style', 'N/A')}_")
+    st.markdown(f"_Famous Work: {', '.join(info.get('examples', []))}_")
 
 # Sidebar
 with st.sidebar:
