@@ -75,7 +75,7 @@ artist_info = {
 uploaded_file = st.file_uploader("Upload a painting", type=["jpg", "jpeg", "png"])
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
-    thumb = image.resize((450, 450))
+    thumb = image.resize((500, 500))
 
     def image_to_base64(img):
         buf = BytesIO()
@@ -85,7 +85,7 @@ if uploaded_file:
     img_base64 = image_to_base64(thumb)
     st.markdown(f"""
     <div style="text-align:center;">
-        <img src="data:image/png;base64,{img_base64}" style="max-width:400px; border:6px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
+        <img src="data:image/png;base64,{img_base64}" style="max-width:450px; border:8px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
         <p style="font-size:14px; color:gray;">Uploaded Painting</p>
     </div>
     """, unsafe_allow_html=True)
