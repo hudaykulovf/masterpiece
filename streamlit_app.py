@@ -45,7 +45,7 @@ body, html {
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">🎨 Masterpiece ID</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">AI-powered app that predicts the artist behind your painting</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">An ML-powered app that identifies the artist behind iconic artworks</div>', unsafe_allow_html=True)
 
 # ---------- LOAD MODEL ----------
 @st.cache_resource
@@ -85,7 +85,7 @@ if uploaded_file:
     img_base64 = image_to_base64(thumb)
     st.markdown(f"""
     <div style="text-align:center;">
-        <img src="data:image/png;base64,{img_base64}" style="max-width:450px; border:8px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
+        <img src="data:image/png;base64,{img_base64}" style="max-width:500px; border:8px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
         <p style="font-size:14px; color:gray;">Uploaded Painting</p>
     </div>
     """, unsafe_allow_html=True)
