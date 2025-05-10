@@ -7,20 +7,20 @@ from PIL import Image
 # Page setup
 st.set_page_config(page_title="Masterpiece ID – AI Artist Classifier", layout="centered")
 
-# Custom CSS styling
+# Minimalist CSS with Helvetica or fallback sans-serif
 st.markdown("""
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
 body, html {
-    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-family: 'Inter', 'Helvetica', sans-serif;
 }
-
 .title {
     font-size: 36px;
-    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-family: 'Inter', 'Helvetica', sans-serif;
     text-align: center;
     margin-bottom: 0px;
 }
-
 .subtitle {
     font-size: 18px;
     font-style: italic;
@@ -28,7 +28,6 @@ body, html {
     color: #666;
     margin-top: 0px;
 }
-
 .artist-label {
     font-size: 22px;
     text-align: center;
@@ -36,9 +35,8 @@ body, html {
     border-top: 1px solid #eee;
     border-bottom: 1px solid #eee;
     margin-top: 20px;
-    font-family: 'Helvetica', 'Arial', sans-serif;
+    font-family: 'Inter', 'Helvetica', sans-serif;
 }
-
 .stImage > img {
     border: 6px solid #ddd;
     border-radius: 4px;
@@ -48,7 +46,7 @@ body, html {
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">🎨 Masterpiece ID</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">AI-powered app that predicts the artist behind the painting</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">AI-powered app that predicts the artist behind your painting</div>', unsafe_allow_html=True)
 
 # Load model and class names
 @st.cache_resource
@@ -121,23 +119,31 @@ if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
     st.image(image, caption="Uploaded Painting", use_container_width=True)
 
-    # Preprocess and predict
-    image_resized = image.resize((512, 512))
+    # Predict
+    image_resized = image.resize((324, 324))
     img_array = np.array(image_resized) / 255.0
     img_array = img_array[np.newaxis, ...]
     prediction = model.predict(img_array)[0]
-    top_index = prediction.argmax()
+    top_indices = prediction.argsort()[::-1][:3]
 
-    name = class_names[top_index]
-    confidence = prediction[top_index] * 100
-    info = artist_info.get(name, {})
+    # Show top-1 prediction with details
+    top_1 = top_indices[0]
+    name_1 = class_names[top_1]
+    conf_1 = prediction[top_1] * 100
+    info_1 = artist_info.get(name_1, {})
 
-    # Display most likely artist
     st.markdown('<div class="artist-label">🎯 Most Likely:</div>', unsafe_allow_html=True)
-    st.markdown(f"<div class='artist-label'><strong>{name.replace('_', ' ')}</strong> — {confidence:.2f}%</div>", unsafe_allow_html=True)
-    st.markdown(f"*{info.get('who', 'N/A')}*")
-    st.markdown(f"_Period & Style: {info.get('period_style', 'N/A')}_")
-    st.markdown(f"_Famous Work: {', '.join(info.get('examples', []))}_")
+    st.markdown(f"<div class='artist-label'><strong>{name_1.replace('_', ' ')}</strong> — {conf_1:.2f}%</div>", unsafe_allow_html=True)
+    st.markdown(f"*{info_1.get('who', 'N/A')}*")
+    st.markdown(f"_Period & Style: {info_1.get('period_style', 'N/A')}_")
+    st.markdown(f"_Famous Work: {', '.join(info_1.get('examples', []))}_")
+
+    # Show other top artists with minimal info
+    st.markdown('<div class="artist-label">🧠 Other Likely Artists:</div>', unsafe_allow_html=True)
+    for i in top_indices[1:]:
+        name = class_names[i]
+        conf = prediction[i] * 100
+        st.markdown(f"• {name.replace('_', ' ')} — {conf:.2f}%")
 
 # Sidebar
 with st.sidebar:
