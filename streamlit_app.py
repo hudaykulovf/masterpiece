@@ -7,7 +7,7 @@ import base64
 from io import BytesIO
 
 # ---------- PAGE SETUP ----------
-st.set_page_config(page_title="Masterpiece ID – AI Artist Classifier", layout="centered")
+st.set_page_config(page_title="Masterpiece ID", layout="centered")
 
 # ---------- CSS STYLING ----------
 st.markdown("""
@@ -75,7 +75,7 @@ artist_info = {
 uploaded_file = st.file_uploader("Upload a painting", type=["jpg", "jpeg", "png"])
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
-    thumb = image.resize((400, 400))
+    thumb = image.resize((450, 450))
 
     def image_to_base64(img):
         buf = BytesIO()
@@ -108,7 +108,7 @@ if uploaded_file:
         if idx == 0:
             st.markdown(f"""
             <div style="text-align:center; margin-top:20px; font-family: 'Inter', sans-serif;">
-                <p style="font-size:18px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
+                <p style="font-size:20px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
                 <p style="font-size:18px; color:#555;">{who}</p>
                 <p style="font-size:16px; font-style:italic; color:#777;">{style}</p>
                 <p style="font-size:16px; font-style:italic; color:#999;">Famous Work: {example}</p>
