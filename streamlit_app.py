@@ -35,44 +35,37 @@ artist_info = {
     "Vincent_van_Gogh": {
         "who": "Dutch Post-Impressionist painter",
         "period_style": "Late 19th century – Post-Impressionism",
-        "famous_for": "Expressive brushwork, swirling forms, and emotional intensity",
-        "examples": ["Starry Night", "Sunflowers"]
+
     },
     "Pablo_Picasso": {
         "who": "Spanish painter, sculptor, and co-founder of Cubism",
         "period_style": "Early to mid 20th century – Cubism, Surrealism",
-        "famous_for": "Abstracted forms, emotional range, and groundbreaking styles",
-        "examples": ["Guernica", "Les Demoiselles d'Avignon"]
+
     },
     "Claude_Monet": {
         "who": "French painter and founder of the Impressionist movement",
         "period_style": "Late 19th to early 20th century – Impressionism",
-        "famous_for": "Light, color, and fluid brushwork in nature scenes",
-        "examples": ["Water Lilies", "Impression, Sunrise"]
+
     },
     "Salvador_Dali": {
         "who": "Spanish surrealist known for dreamlike visuals and eccentricity",
         "period_style": "20th century – Surrealism",
-        "famous_for": "Melting clocks, bizarre dreamscapes, and hyperrealism",
-        "examples": ["The Persistence of Memory", "The Elephants"]
+
     },
     "Rembrandt": {
         "who": "Dutch Baroque painter and printmaker",
         "period_style": "17th century – Baroque",
-        "famous_for": "Dramatic lighting, portraiture, and religious themes",
-        "examples": ["The Night Watch", "Self-Portrait with Two Circles"]
+
     },
     "Marc_Chagall": {
         "who": "Belarusian-French modernist painter",
         "period_style": "20th century – Expressionism, Surrealism",
-        "famous_for": "Dreamlike, colorful scenes drawn from folklore and religion",
-        "examples": ["I and the Village", "The Birthday"]
+
     },
     "Paul_Gauguin": {
         "who": "French Post-Impressionist painter",
         "period_style": "Late 19th century – Symbolism, Primitivism",
-        "famous_for": "Tahitian scenes, bold color, and symbolic content",
-        "examples": ["Where Do We Come From?", "Tahitian Women on the Beach"]
+
     },
     "Albrecht_Durer": {
         "who": "German Renaissance painter and printmaker",
@@ -83,14 +76,12 @@ artist_info = {
     "Henri_Matisse": {
         "who": "French artist known for Fauvism",
         "period_style": "Early 20th century – Fauvism, Modernism",
-        "famous_for": "Vibrant color, flattened form, and expressive decoration",
-        "examples": ["The Dance", "Woman with a Hat"]
+
     },
     "Nicholas_Roerich": {
         "who": "Russian painter, philosopher, and mystic",
         "period_style": "20th century – Symbolism, Spiritual Art",
-        "famous_for": "Mystical Himalayan landscapes and spiritual themes",
-        "examples": ["The Himalayas", "St. Mercurius"]
+
     }
 }
 
