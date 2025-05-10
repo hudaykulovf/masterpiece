@@ -122,7 +122,7 @@ img_array = img_array[np.newaxis, ...]
 prediction = model.predict(img_array)[0]
 top_indices = prediction.argsort()[::-1][:3]
 
-# Unified layout (no dividers, same font)
+# Unified layout (clean formatting, no dividers)
 for idx, i in enumerate(top_indices):
     name = class_names[i].replace("_", " ")
     conf = prediction[i] * 100
@@ -132,19 +132,26 @@ for idx, i in enumerate(top_indices):
     example = ', '.join(info.get('examples', []))
 
     if idx == 0:
-        st.markdown(f"""
-        <div style="text-align:center; margin-top:20px; font-family: 'Inter', sans-serif;">
-            <p style="font-size:18px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
-            <p style="font-size:16px; color:#555;">{who}</p>
-            <p style="font-size:15px; font-style:italic; color:#777;">{style}</p>
-            <p style="font-size:15px; font-style:italic; color:#999;">Famous Work: {example}</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            f"""
+            <div style="text-align:center; margin-top:20px; font-family: 'Inter', sans-serif;">
+                <p style="font-size:18px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
+                <p style="font-size:16px; color:#555;">{who}</p>
+                <p style="font-size:15px; font-style:italic; color:#777;">{style}</p>
+                <p style="font-size:15px; font-style:italic; color:#999;">Famous Work: {example}</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
     else:
-        st.markdown(f"""
-        <div style="text-align:center; margin-top:10px; font-family: 'Inter', sans-serif;">
-            <
-
+        st.markdown(
+            f"""
+            <div style="text-align:center; margin-top:10px; font-family: 'Inter', sans-serif;">
+                <p style="font-size:16px; color:#444;">• {name} — {conf:.2f}%</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 # Sidebar
 with st.sidebar:
