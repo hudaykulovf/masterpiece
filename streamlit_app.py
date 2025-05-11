@@ -112,9 +112,31 @@ if uploaded_file:
         conf = prediction[i] * 100
         if idx == 0:
             st.markdown(f"### 🎯 {name} — {conf:.2f}%")
-            if st.toggle("🔍 Show Grad-CAM Heatmap"):
-                heatmap = make_gradcam_heatmap(img_array, model, pred_index=i)
-                plot_gradcam_with_legend(image_resized, heatmap)
+            st.markdown("### 🔥 Model Focus (Grad-CAM)")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("**Original Image**")
+    st.image(image_resized, use_column_width=True)
+
+with col2:
+    st.markdown("**Grad-CAM Heatmap**")
+    heatmap = make_gradcam_heatmap(img_array, model, pred_index=i)
+    heatmap_resized = Image.fromarray(np.uint8(255 * heatmap.numpy())).resize(image_resized.size)
+    heatmap_np = np.array(heatmap_resized) / 255.0
+    colored_heatmap = cm.jet(heatmap_np)[:, :, :3]
+    colored_heatmap_img = Image.fromarray(np.uint8(colored_heatmap * 255))
+    blended = Image.blend(image_resized, colored_heatmap_img, alpha=0.5)
+
+    fig, ax = plt.subplots()
+    ax.imshow(blended)
+    ax.axis('off')
+    sm = plt.cm.ScalarMappable(cmap='jet')
+    sm.set_array(heatmap_np)
+    cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
+    cbar.set_label('Relevance to Prediction', rotation=270, labelpad=15)
+    st.pyplot(fig)
         else:
             st.markdown(f"- {name} — {conf:.2f}%")
 
