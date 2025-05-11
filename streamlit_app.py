@@ -5,6 +5,7 @@ import json
 from PIL import Image
 import base64
 from io import BytesIO
+import matplotlib.pyplot as plt
 
 # ---------- PAGE SETUP ----------
 st.set_page_config(page_title="Masterpiece ID", layout="centered")
@@ -49,7 +50,6 @@ p {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 </style>
-
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">🎨 Masterpiece ID</div>', unsafe_allow_html=True)
@@ -79,21 +79,60 @@ artist_info = {
     "Nicholas_Roerich": {"who": "Russian painter and mystic of Himalayan scenes", "period_style": "20th century – Symbolism, Spiritual Art", "examples": ["The Himalayas"]}
 }
 
+# ---------- UTILS ----------
+def image_to_base64(img):
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode()
+
+def plot_confidences(predictions, class_names, top_n=5):
+    top_indices = predictions.argsort()[::-1][:top_n]
+    top_classes = [class_names[i].replace("_", " ") for i in top_indices]
+    top_scores = [predictions[i] * 100 for i in top_indices]
+
+    fig, ax = plt.subplots()
+    bars = ax.barh(top_classes[::-1], top_scores[::-1], color="#6a5acd")
+    ax.set_xlabel("Confidence (%)")
+    ax.set_title("Top Predictions")
+    ax.invert_yaxis()
+    for bar, score in zip(bars, top_scores[::-1]):
+        ax.text(bar.get_width() + 1, bar.get_y() + 0.4, f"{score:.1f}%", va='center')
+    st.pyplot(fig)
+
+def make_gradcam_heatmap(img_array, model, last_conv_layer_name, pred_index=None):
+    grad_model = tf.keras.models.Model(
+        [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
+    )
+    with tf.GradientTape() as tape:
+        conv_outputs, predictions = grad_model(img_array)
+        if pred_index is None:
+            pred_index = tf.argmax(predictions[0])
+        class_output = predictions[:, pred_index]
+
+    grads = tape.gradient(class_output, conv_outputs)
+    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+    conv_outputs = conv_outputs[0]
+    heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
+    heatmap = tf.squeeze(heatmap)
+    heatmap = tf.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
+    return heatmap.numpy()
+
+def overlay_heatmap(img, heatmap, alpha=0.4):
+    import cv2
+    heatmap = cv2.resize(heatmap, img.size)
+    heatmap = np.uint8(255 * heatmap)
+    heatmap_color = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
+    superimposed_img = cv2.addWeighted(np.array(img), 1 - alpha, heatmap_color, alpha, 0)
+    return Image.fromarray(superimposed_img)
+
 # ---------- IMAGE UPLOAD ----------
 uploaded_file = st.file_uploader("Upload the artwork", type=["jpg", "jpeg", "png"])
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
     thumb = image.resize((500, 500))
-
-    def image_to_base64(img):
-        buf = BytesIO()
-        img.save(buf, format="PNG")
-        return base64.b64encode(buf.getvalue()).decode()
-
-    img_base64 = image_to_base64(thumb)
     st.markdown(f"""
     <div style="text-align:center;">
-        <img src="data:image/png;base64,{img_base64}" style="max-width:550px; border:8px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
+        <img src="data:image/png;base64,{image_to_base64(thumb)}" style="max-width:550px; border:8px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
         <p style="font-size:12px; color:gray;">Uploaded Painting</p>
     </div>
     """, unsafe_allow_html=True)
@@ -102,6 +141,7 @@ if uploaded_file:
     image_resized = image.resize((512, 512))
     img_array = np.array(image_resized) / 255.0
     img_array = img_array[np.newaxis, ...]
+
     prediction = model.predict(img_array)[0]
     top_indices = prediction.argsort()[::-1][:3]
 
@@ -118,8 +158,8 @@ if uploaded_file:
             <div style="text-align:center; margin-top:20px; font-family: 'Inter', sans-serif;">
                 <p style="font-size:22px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
                 <p style="font-size:16px; color:#555;">{who}</p>
-                <p style="font-size:16px; font-style: color:#777;">{style}</p>
-                <p style="font-size:16px; font-style: color:#999;">Famous Work: {example}</p>
+                <p style="font-size:16px; color:#777;">{style}</p>
+                <p style="font-size:16px; color:#999;">Famous Work: {example}</p>
             </div>
             """, unsafe_allow_html=True)
         else:
@@ -128,6 +168,15 @@ if uploaded_file:
                 <p style="font-size:18px; color:#444;">• {name} — {conf:.2f}%</p>
             </div>
             """, unsafe_allow_html=True)
+
+    # ---------- CONFIDENCE BAR CHART ----------
+    plot_confidences(prediction, class_names)
+
+    # ---------- GRAD-CAM ----------
+    st.markdown("### 🔥 What influenced this prediction?")
+    heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10")
+    gradcam_img = overlay_heatmap(image_resized, heatmap)
+    st.image(gradcam_img, caption="Grad-CAM Heatmap", use_column_width=True)
 
 # ---------- SIDEBAR ----------
 with st.sidebar:
