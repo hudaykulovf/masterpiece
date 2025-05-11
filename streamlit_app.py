@@ -81,7 +81,22 @@ def overlay_heatmap_on_image(original_image, heatmap, alpha=0.5):
     heatmap_np = np.array(heatmap_resized) / 255.0
     colored_heatmap = cm.jet(heatmap_np)[:, :, :3]
     colored_heatmap_img = Image.fromarray(np.uint8(colored_heatmap * 255))
-    return Image.blend(original_image, colored_heatmap_img, alpha=alpha)
+    blended = Image.blend(original_image, colored_heatmap_img, alpha=alpha)
+
+    # Add colorbar using matplotlib
+    fig, ax = plt.subplots()
+    ax.imshow(blended)
+    ax.axis("off")
+    sm = plt.cm.ScalarMappable(cmap="jet")
+    sm.set_array(heatmap_np)
+    cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
+    cbar.set_label("Relevance to Prediction", rotation=270, labelpad=15)
+
+    buf = BytesIO()
+    plt.savefig(buf, format="png", bbox_inches="tight", dpi=200)
+    plt.close(fig)
+    buf.seek(0)
+    return Image.open(buf)
 
 # ---------- ARTIST INFO ----------
 artist_info = {
@@ -150,9 +165,10 @@ if uploaded_file:
     # ---------- GRAD-CAM VISUALIZATION ----------
     st.markdown("""---""")
     st.subheader("🔍 Grad-CAM: What the model focused on")
+
     heatmap = make_gradcam_heatmap(img_array, model, pred_index=top_indices[0])
     gradcam_image = overlay_heatmap_on_image(image.resize((512, 512)), heatmap)
-    st.image(gradcam_image, caption="Model Attention via Grad-CAM", use_column_width=True)
+    st.image(gradcam_image, caption="Model Attention via Grad-CAM", use_container_width=True)
 
 # ---------- SIDEBAR ----------
 with st.sidebar:
