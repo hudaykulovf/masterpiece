@@ -93,7 +93,7 @@ if uploaded_file:
     img_base64 = image_to_base64(thumb)
     st.markdown(f"""
     <div style="text-align:center;">
-        <img src="data:image/png;base64,{img_base64}" style="max-width:500px; border:8px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
+        <img src="data:image/png;base64,{img_base64}" style="max-width:550px; border:8px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
         <p style="font-size:12px; color:gray;">Uploaded Painting</p>
     </div>
     """, unsafe_allow_html=True)
