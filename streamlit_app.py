@@ -84,7 +84,12 @@ uploaded_file = st.file_uploader("Upload the artwork", type=["jpg", "jpeg", "png
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
     thumb = image.resize((500, 500))
-
+    
+def preprocess_image(image_path):
+    image = Image.open(image_path).convert("RGB")
+    image = image.resize((254, 254))  # match training size
+    return image
+    
     def image_to_base64(img):
         buf = BytesIO()
         img.save(buf, format="PNG")
