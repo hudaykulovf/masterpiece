@@ -159,13 +159,22 @@ if uploaded_file:
             </div>
             """, unsafe_allow_html=True)
 
-# ---------- GRAD-CAM (Toggleable, Clean UI) ----------
+# ---------- GRAD-CAM (Toggleable with session state) ----------
 st.markdown("<hr style='margin-top:40px;'>", unsafe_allow_html=True)
 st.markdown("<div style='font-family:DM Sans, sans-serif; font-size:20px; font-weight:600;'>🧠 Model Interpretability</div>", unsafe_allow_html=True)
 
-if st.button("🔍 Show Grad-CAM Explanation"):
+# Initialize session state if not already set
+if "show_gradcam" not in st.session_state:
+    st.session_state.show_gradcam = False
+
+# Button logic
+if st.button("🔍 Show Grad-CAM Explanation" if not st.session_state.show_gradcam else "❌ Hide Grad-CAM"):
+    st.session_state.show_gradcam = not st.session_state.show_gradcam
+
+# Display only if toggled on
+if st.session_state.show_gradcam:
     st.markdown("<div style='font-family:DM Sans, sans-serif; font-size:18px; margin-top:10px;'>🔥 <b>What influenced this prediction?</b></div>", unsafe_allow_html=True)
-    
+
     st.markdown("""
     <div style='font-family:DM Sans, sans-serif; font-size:16px; color:#444; margin-bottom:16px;'>
     Grad-CAM (Gradient-weighted Class Activation Mapping) highlights the areas of the painting that the model focused on when making its decision.
@@ -179,7 +188,6 @@ if st.button("🔍 Show Grad-CAM Explanation"):
 
     heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10")
     display_gradcam_with_legend(image_resized, heatmap)
-
 
 
 # ---------- SIDEBAR ----------
