@@ -116,7 +116,7 @@ if uploaded_file:
         if idx == 0:
             st.markdown(f"""
             <div style="text-align:center; margin-top:20px; font-family: 'Inter', sans-serif;">
-                <p style="font-size:18px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
+                <p style="font-size:20px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
                 <p style="font-size:16px; color:#555;">{who}</p>
                 <p style="font-size:16px; font-style: color:#777;">{style}</p>
                 <p style="font-size:16px; font-style: color:#999;">Famous Work: {example}</p>
