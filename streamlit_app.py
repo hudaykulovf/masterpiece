@@ -24,8 +24,7 @@ body, html {
     margin-bottom: 0px;
 }
 .subtitle {
-    font-size: 18px;
-    font-style: italic;
+    font-size: 20px;
     text-align: center;
     color: #666;
     margin-top: 0px;
