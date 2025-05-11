@@ -80,7 +80,7 @@ artist_info = {
 }
 
 # ---------- IMAGE UPLOAD ----------
-uploaded_file = st.file_uploader(type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("", type=["jpg", "jpeg", "png"])
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
     thumb = image.resize((500, 500))
