@@ -58,43 +58,6 @@ def load_model():
 
 model, class_names = load_model()
 
-# ---------- GRAD-CAM UTILITIES ----------
-def make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10", pred_index=None):
-    grad_model = tf.keras.models.Model(
-        [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
-    )
-
-    with tf.GradientTape() as tape:
-        conv_outputs, predictions = grad_model(img_array)
-        if pred_index is None:
-            pred_index = tf.argmax(predictions[0])
-        class_output = predictions[:, pred_index]
-
-    grads = tape.gradient(class_output, conv_outputs)
-    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-    conv_outputs = conv_outputs[0]
-    heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
-    heatmap = tf.squeeze(heatmap)
-    heatmap = tf.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
-    return heatmap.numpy()
-
-def display_gradcam_with_legend(image_pil, heatmap, alpha=0.5):
-    heatmap_resized = Image.fromarray(np.uint8(255 * heatmap)).resize(image_pil.size)
-    heatmap_np = np.array(heatmap_resized) / 255.0
-    colored_heatmap = cm.jet(heatmap_np)[:, :, :3]
-    colored_heatmap_img = Image.fromarray(np.uint8(colored_heatmap * 255))
-    blended = Image.blend(image_pil, colored_heatmap_img, alpha=alpha)
-
-    # Plot with colorbar
-    fig, ax = plt.subplots()
-    ax.imshow(blended)
-    ax.axis('off')
-    cmap = cm.ScalarMappable(cmap='jet')
-    cmap.set_array(heatmap_np)
-    cbar = plt.colorbar(cmap, ax=ax, fraction=0.046, pad=0.04)
-    cbar.set_label('Relevance to Prediction', rotation=270, labelpad=15)
-    st.pyplot(fig)
-
 # ---------- ARTIST INFO ----------
 artist_info = {
     "Vincent_van_Gogh": {"who": "Dutch Post-Impressionist painter", "period_style": "Late 19th century – Post-Impressionism", "examples": ["Starry Night"]},
@@ -158,30 +121,6 @@ if uploaded_file:
                 <p style="font-size:18px; color:#444;">• {name} — {conf:.2f}%</p>
             </div>
             """, unsafe_allow_html=True)
-
-# ---------- GRAD-CAM (Toggleable with st.toggle) ----------
-st.markdown("<hr style='margin-top:40px;'>", unsafe_allow_html=True)
-st.markdown("<div style='font-family:DM Sans, sans-serif; font-size:18px; font-weight:600;'>🧠 Model Interpretability</div>", unsafe_allow_html=True)
-
-show_gradcam = st.toggle("🔍 Show Grad-CAM Explanation", value=False)
-
-if show_gradcam:
-    st.markdown("<div style='font-family:DM Sans, sans-serif; font-size:18px; margin-top:10px;'>🔥 <b>What influenced this prediction?</b></div>", unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style='font-family:DM Sans, sans-serif; font-size:16px; color:#444; margin-bottom:16px;'>
-    Grad-CAM (Gradient-weighted Class Activation Mapping) highlights the areas of the painting that the model focused on when making its decision.
-    <ul>
-        <li><b>Red areas</b>: most influential</li>
-        <li><b>Blue areas</b>: least or no influence</li>
-    </ul>
-    This provides visual transparency into the model's internal reasoning.
-    </div>
-    """, unsafe_allow_html=True)
-
-    heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10")
-    display_gradcam_with_legend(image_resized, heatmap)
-
 
 # ---------- SIDEBAR ----------
 with st.sidebar:
