@@ -159,18 +159,27 @@ if uploaded_file:
             </div>
             """, unsafe_allow_html=True)
 
-# ---------- GRAD-CAM (Toggleable) ----------
-if st.button("🔍 Show Grad-CAM Explanation"):
-    st.markdown("### 🔥 What influenced this prediction?")
-    st.markdown("""
-    Grad-CAM (Gradient-weighted Class Activation Mapping) highlights the regions of the image that the model focused on when making its prediction.
+# ---------- GRAD-CAM (Toggleable, Clean UI) ----------
+st.markdown("<hr style='margin-top:40px;'>", unsafe_allow_html=True)
+st.markdown("<div style='font-family:DM Sans, sans-serif; font-size:20px; font-weight:600;'>🧠 Model Interpretability</div>", unsafe_allow_html=True)
 
-    - **Red areas** = highly influential  
-    - **Blue areas** = low or no influence  
-    This helps you understand which parts of the painting were most important in the classification.
-    """)
+if st.button("🔍 Show Grad-CAM Explanation"):
+    st.markdown("<div style='font-family:DM Sans, sans-serif; font-size:18px; margin-top:10px;'>🔥 <b>What influenced this prediction?</b></div>", unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style='font-family:DM Sans, sans-serif; font-size:16px; color:#444; margin-bottom:16px;'>
+    Grad-CAM (Gradient-weighted Class Activation Mapping) highlights the areas of the painting that the model focused on when making its decision.
+    <ul>
+        <li><b>Red areas</b>: most influential</li>
+        <li><b>Blue areas</b>: least or no influence</li>
+    </ul>
+    This provides visual transparency into the model's internal reasoning.
+    </div>
+    """, unsafe_allow_html=True)
+
     heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10")
     display_gradcam_with_legend(image_resized, heatmap)
+
 
 
 # ---------- SIDEBAR ----------
