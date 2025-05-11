@@ -3,13 +3,10 @@ import tensorflow as tf
 import numpy as np
 import json
 from PIL import Image
-from io import BytesIO
 import base64
+from io import BytesIO
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
-from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
-import plotly.express as px
 
 # ---------- PAGE SETUP ----------
 st.set_page_config(page_title="Masterpiece ID", layout="centered")
@@ -66,11 +63,13 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10", pred_
     grad_model = tf.keras.models.Model(
         [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
     )
+
     with tf.GradientTape() as tape:
         conv_outputs, predictions = grad_model(img_array)
         if pred_index is None:
             pred_index = tf.argmax(predictions[0])
         class_output = predictions[:, pred_index]
+
     grads = tape.gradient(class_output, conv_outputs)
     pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
     conv_outputs = conv_outputs[0]
@@ -86,6 +85,7 @@ def display_gradcam_with_legend(image_pil, heatmap, alpha=0.5):
     colored_heatmap_img = Image.fromarray(np.uint8(colored_heatmap * 255))
     blended = Image.blend(image_pil, colored_heatmap_img, alpha=alpha)
 
+    # Plot with colorbar
     fig, ax = plt.subplots()
     ax.imshow(blended)
     ax.axis('off')
@@ -109,7 +109,7 @@ artist_info = {
     "Nicholas_Roerich": {"who": "Russian painter and mystic of Himalayan scenes", "period_style": "20th century – Symbolism, Spiritual Art", "examples": ["The Himalayas"]}
 }
 
-# ---------- IMAGE TO BASE64 ----------
+# ---------- UTILS ----------
 def image_to_base64(img):
     buf = BytesIO()
     img.save(buf, format="PNG")
@@ -166,54 +166,12 @@ if uploaded_file:
 
     - **Red areas** indicate high influence.
     - **Blue areas** indicate low or no influence.
-    - This makes the model's decision more interpretable.
+    - The model computes which pixels contributed most to the predicted artist.
+
+    This helps make the AI's decision-making more interpretable.
     """)
     heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10")
     display_gradcam_with_legend(image_resized, heatmap)
-
-# ---------- EMBEDDING VISUALIZATION ----------
-st.markdown("### 🧠 How Did the Model Learn Artist Styles?")
-st.markdown("""
-This interactive plot shows how paintings from the training set were positioned in the model’s internal feature space.
-
-- Each dot is a painting.
-- Dots closer together were seen as **stylistically similar** by the model.
-- This helps explain how the model generalized different artistic styles.
-""")
-
-try:
-    embeddings = np.load("embeddings.npy")
-    labels = np.load("labels.npy")
-    with open("label_names.json", "r") as f:
-        artist_names = json.load(f)
-
-    method = st.selectbox("Choose Dimensionality Reduction", ["t-SNE", "PCA"])
-    n_samples = st.slider("Number of Samples to Show", min_value=200, max_value=len(embeddings), step=100, value=1000)
-
-    sample_indices = np.random.choice(len(embeddings), size=n_samples, replace=False)
-    sampled_embeddings = embeddings[sample_indices]
-    sampled_labels = labels[sample_indices]
-
-    if method == "t-SNE":
-        reducer = TSNE(n_components=2, random_state=42, perplexity=30)
-    else:
-        reducer = PCA(n_components=2)
-
-    reduced = reducer.fit_transform(sampled_embeddings)
-    df_vis = {
-        "x": reduced[:, 0],
-        "y": reduced[:, 1],
-        "artist": [class_names[i] for i in sampled_labels]
-    }
-
-    fig = px.scatter(df_vis, x="x", y="y", color="artist",
-                     title=f"{method} Visualization of Model Embeddings",
-                     labels={"x": "Component 1", "y": "Component 2"},
-                     template="plotly_white", height=600)
-    st.plotly_chart(fig, use_container_width=True)
-
-except Exception as e:
-    st.warning(f"Embedding visualization unavailable: {e}")
 
 # ---------- SIDEBAR ----------
 with st.sidebar:
