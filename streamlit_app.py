@@ -138,7 +138,7 @@ with col2:
     cbar.set_label('Relevance to Prediction', rotation=270, labelpad=15)
     st.pyplot(fig)
     
-else:
+    else:
         st.markdown(f"""
         <div style="text-align:center; margin-top:10px; font-family: 'Inter', sans-serif;">
             <p style="font-size:18px; color:#444;">• {name} — {conf:.2f}%</p>
