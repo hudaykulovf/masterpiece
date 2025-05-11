@@ -11,24 +11,23 @@ st.set_page_config(page_title="Masterpiece ID", layout="centered")
 
 # ---------- CSS STYLING ----------
 st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@400,700&display=swap" rel="stylesheet">
 
 <style>
 body, html {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'DM+Sans', sans-serif;
 }
 
 .title {
     font-size: 36px;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'DM+Sans', sans-serif;
     font-weight: 700;
     text-align: center;
     margin-bottom: 0px;
 }
 
 .subtitle {
-    font-size: 18px;
-    font-style: italic;
+    font-size: 20px;
     text-align: center;
     color: #666;
     margin-top: 0px;
@@ -39,7 +38,7 @@ body, html {
     text-align: center;
     padding: 10px 0;
     margin-top: 20px;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'DM+Sans', sans-serif;
     font-weight: 500;
 }
 
@@ -51,7 +50,7 @@ body, html {
 
 p {
     font-size: 16px;
-    font-family: 'Roboto', sans-serif;
+    font-family: 'DM+Sans', sans-serif;
     text-align: center;
     margin: 6px 0;
 }
