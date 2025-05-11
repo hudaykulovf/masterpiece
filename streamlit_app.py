@@ -137,8 +137,9 @@ with col2:
     cbar = plt.colorbar(sm, ax=ax, fraction=0.046, pad=0.04)
     cbar.set_label('Relevance to Prediction', rotation=270, labelpad=15)
     st.pyplot(fig)
-        else:
-            st.markdown(f"- {name} — {conf:.2f}%")
+    
+else:
+    st.markdown(f"- {name} — {conf:.2f}%")
 
 # SIDEBAR
 with st.sidebar:
