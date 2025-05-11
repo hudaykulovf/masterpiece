@@ -159,20 +159,13 @@ if uploaded_file:
             </div>
             """, unsafe_allow_html=True)
 
-# ---------- GRAD-CAM (Toggleable with session state) ----------
+# ---------- GRAD-CAM (Toggleable with st.toggle) ----------
 st.markdown("<hr style='margin-top:40px;'>", unsafe_allow_html=True)
-st.markdown("<div style='font-family:DM Sans, sans-serif; font-size:20px; font-weight:600;'>🧠 Model Interpretability</div>", unsafe_allow_html=True)
+st.markdown("<div style='font-family:DM Sans, sans-serif; font-size:18px; font-weight:600;'>🧠 Model Interpretability</div>", unsafe_allow_html=True)
 
-# Initialize session state if not already set
-if "show_gradcam" not in st.session_state:
-    st.session_state.show_gradcam = False
+show_gradcam = st.toggle("🔍 Show Grad-CAM Explanation", value=False)
 
-# Button logic
-if st.button("🔍 Show Grad-CAM Explanation" if not st.session_state.show_gradcam else "❌ Hide Grad-CAM"):
-    st.session_state.show_gradcam = not st.session_state.show_gradcam
-
-# Display only if toggled on
-if st.session_state.show_gradcam:
+if show_gradcam:
     st.markdown("<div style='font-family:DM Sans, sans-serif; font-size:18px; margin-top:10px;'>🔥 <b>What influenced this prediction?</b></div>", unsafe_allow_html=True)
 
     st.markdown("""
