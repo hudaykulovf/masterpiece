@@ -159,19 +159,19 @@ if uploaded_file:
             </div>
             """, unsafe_allow_html=True)
 
-    # ---------- GRAD-CAM ----------
+# ---------- GRAD-CAM (Toggleable) ----------
+if st.button("🔍 Show Grad-CAM Explanation"):
     st.markdown("### 🔥 What influenced this prediction?")
     st.markdown("""
-    Grad-CAM (Gradient-weighted Class Activation Mapping) highlights areas of the image that the model focused on when making its prediction.
+    Grad-CAM (Gradient-weighted Class Activation Mapping) highlights the regions of the image that the model focused on when making its prediction.
 
-    - **Red areas** indicate high influence.
-    - **Blue areas** indicate low or no influence.
-    - The model computes which pixels contributed most to the predicted artist.
-
-    This helps make the AI's decision-making more interpretable.
+    - **Red areas** = highly influential  
+    - **Blue areas** = low or no influence  
+    This helps you understand which parts of the painting were most important in the classification.
     """)
     heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10")
     display_gradcam_with_legend(image_resized, heatmap)
+
 
 # ---------- SIDEBAR ----------
 with st.sidebar:
