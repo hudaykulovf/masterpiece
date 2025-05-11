@@ -6,6 +6,7 @@ from PIL import Image
 import base64
 from io import BytesIO
 import matplotlib.cm as cm
+import matplotlib.pyplot as plt
 
 # ---------- PAGE SETUP ----------
 st.set_page_config(page_title="Masterpiece ID", layout="centered")
@@ -29,14 +30,6 @@ body, html {
     text-align: center;
     color: #666;
     margin-top: 0px;
-}
-.artist-label {
-    font-size: 18px;
-    text-align: center;
-    padding: 10px 0;
-    margin-top: 20px;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 700;
 }
 p {
     font-size: 18px;
@@ -65,6 +58,43 @@ def load_model():
 
 model, class_names = load_model()
 
+# ---------- GRAD-CAM UTILITIES ----------
+def make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10", pred_index=None):
+    grad_model = tf.keras.models.Model(
+        [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
+    )
+
+    with tf.GradientTape() as tape:
+        conv_outputs, predictions = grad_model(img_array)
+        if pred_index is None:
+            pred_index = tf.argmax(predictions[0])
+        class_output = predictions[:, pred_index]
+
+    grads = tape.gradient(class_output, conv_outputs)
+    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
+    conv_outputs = conv_outputs[0]
+    heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
+    heatmap = tf.squeeze(heatmap)
+    heatmap = tf.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
+    return heatmap.numpy()
+
+def display_gradcam_with_legend(image_pil, heatmap, alpha=0.5):
+    heatmap_resized = Image.fromarray(np.uint8(255 * heatmap)).resize(image_pil.size)
+    heatmap_np = np.array(heatmap_resized) / 255.0
+    colored_heatmap = cm.jet(heatmap_np)[:, :, :3]
+    colored_heatmap_img = Image.fromarray(np.uint8(colored_heatmap * 255))
+    blended = Image.blend(image_pil, colored_heatmap_img, alpha=alpha)
+
+    # Plot with colorbar
+    fig, ax = plt.subplots()
+    ax.imshow(blended)
+    ax.axis('off')
+    cmap = cm.ScalarMappable(cmap='jet')
+    cmap.set_array(heatmap_np)
+    cbar = plt.colorbar(cmap, ax=ax, fraction=0.046, pad=0.04)
+    cbar.set_label('Relevance to Prediction', rotation=270, labelpad=15)
+    st.pyplot(fig)
+
 # ---------- ARTIST INFO ----------
 artist_info = {
     "Vincent_van_Gogh": {"who": "Dutch Post-Impressionist painter", "period_style": "Late 19th century – Post-Impressionism", "examples": ["Starry Night"]},
@@ -84,36 +114,6 @@ def image_to_base64(img):
     buf = BytesIO()
     img.save(buf, format="PNG")
     return base64.b64encode(buf.getvalue()).decode()
-
-def make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10", pred_index=None):
-    grad_model = tf.keras.models.Model(
-        [model.inputs], [model.get_layer(last_conv_layer_name).output, model.output]
-    )
-
-    with tf.GradientTape() as tape:
-        conv_outputs, predictions = grad_model(img_array)
-        if pred_index is None:
-            pred_index = tf.argmax(predictions[0])
-        class_output = predictions[:, pred_index]
-
-    grads = tape.gradient(class_output, conv_outputs)
-    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-
-    conv_outputs = conv_outputs[0]
-    heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
-    heatmap = tf.squeeze(heatmap)
-
-    heatmap = tf.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
-    return heatmap.numpy()
-
-def display_gradcam(image_pil, heatmap, alpha=0.5):
-    heatmap_resized = Image.fromarray(np.uint8(255 * heatmap)).resize(image_pil.size)
-    heatmap_np = np.array(heatmap_resized) / 255.0
-    colored_heatmap = cm.jet(heatmap_np)[:, :, :3]
-    colored_heatmap_img = Image.fromarray(np.uint8(colored_heatmap * 255))
-
-    blended = Image.blend(image_pil, colored_heatmap_img, alpha=alpha)
-    st.image(blended, caption="Grad-CAM: Focus of the model", use_column_width=True)
 
 # ---------- IMAGE UPLOAD ----------
 uploaded_file = st.file_uploader("Upload the artwork", type=["jpg", "jpeg", "png"])
@@ -161,8 +161,17 @@ if uploaded_file:
 
     # ---------- GRAD-CAM ----------
     st.markdown("### 🔥 What influenced this prediction?")
+    st.markdown("""
+    Grad-CAM (Gradient-weighted Class Activation Mapping) highlights areas of the image that the model focused on when making its prediction.
+
+    - **Red areas** indicate high influence.
+    - **Blue areas** indicate low or no influence.
+    - The model computes which pixels contributed most to the predicted artist.
+
+    This helps make the AI's decision-making more interpretable.
+    """)
     heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10")
-    display_gradcam(image_resized, heatmap)
+    display_gradcam_with_legend(image_resized, heatmap)
 
 # ---------- SIDEBAR ----------
 with st.sidebar:
