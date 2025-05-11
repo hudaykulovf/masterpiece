@@ -11,50 +11,46 @@ st.set_page_config(page_title="Masterpiece ID", layout="centered")
 
 # ---------- CSS STYLING ----------
 st.markdown("""
-<<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@400,700&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;700&display=swap" rel="stylesheet">
 <style>
 body, html {
-    font-family: 'DM+Sans', sans-serif;
+    font-family: 'DM Sans', sans-serif;
 }
-
 .title {
     font-size: 36px;
-    font-family: 'DM+Sans', sans-serif;
+    font-family: 'DM Sans', sans-serif;
     font-weight: 700;
     text-align: center;
     margin-bottom: 0px;
 }
-
 .subtitle {
-    font-size: 20px;
+    font-size: 18px;
+    font-style: italic;
     text-align: center;
     color: #666;
     margin-top: 0px;
 }
-
 .artist-label {
     font-size: 20px;
     text-align: center;
     padding: 10px 0;
     margin-top: 20px;
-    font-family: 'DM+Sans', sans-serif;
-    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
 }
-
+p {
+    font-size: 16px;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+    margin: 6px 0;
+}
 .stImage > img {
     border: 6px solid #ddd;
     border-radius: 4px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
-
-p {
-    font-size: 16px;
-    font-family: 'DM+Sans', sans-serif;
-    text-align: center;
-    margin: 6px 0;
-}
 </style>
+
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">🎨 Masterpiece ID</div>', unsafe_allow_html=True)
