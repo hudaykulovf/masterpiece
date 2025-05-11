@@ -11,14 +11,15 @@ st.set_page_config(page_title="Masterpiece ID", layout="centered")
 
 # ---------- CSS STYLING ----------
 st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap" rel="stylesheet">
+
 <style>
 body, html {
-    font-family: 'Inter', 'Helvetica', sans-serif;
+    font-family: 'Lora', serif;
 }
 .title {
-    font-size: 36px;
-    font-family: 'Inter', 'Helvetica', sans-serif;
+    font-size: 32px;
+    font-family: 'Lora', serif;
     text-align: center;
     margin-bottom: 0px;
 }
@@ -26,22 +27,18 @@ body, html {
     font-size: 18px;
     font-style: italic;
     text-align: center;
-    color: #666;
+    color: #555;
     margin-top: 0px;
 }
-.artist-label {
-    font-size: 22px;
+.artist-label, p {
+    font-size: 16px;
     text-align: center;
-    padding: 10px 0;
-    margin-top: 20px;
-    font-family: 'Inter', 'Helvetica', sans-serif;
-}
-.stImage > img {
-    border: 6px solid #ddd;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    font-family: 'Lora', serif;
+    color: #333;
+    margin-top: 10px;
 }
 </style>
+
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">🎨 Masterpiece ID</div>', unsafe_allow_html=True)
