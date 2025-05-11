@@ -24,13 +24,13 @@ body, html {
     margin-bottom: 0px;
 }
 .subtitle {
-    font-size: 20px;
+    font-size: 18px;
     text-align: center;
     color: #666;
     margin-top: 0px;
 }
 .artist-label {
-    font-size: 20px;
+    font-size: 18px;
     text-align: center;
     padding: 10px 0;
     margin-top: 20px;
@@ -38,7 +38,7 @@ body, html {
     font-weight: 700;
 }
 p {
-    font-size: 20px;
+    font-size: 18px;
     font-family: 'DM Sans', sans-serif;
     text-align: center;
     margin: 6px 0;
