@@ -11,34 +11,51 @@ st.set_page_config(page_title="Masterpiece ID", layout="centered")
 
 # ---------- CSS STYLING ----------
 st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 body, html {
-    font-family: 'Lora', serif;
+    font-family: 'Roboto', sans-serif;
 }
+
 .title {
-    font-size: 32px;
-    font-family: 'Lora', serif;
+    font-size: 36px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
     text-align: center;
     margin-bottom: 0px;
 }
+
 .subtitle {
     font-size: 18px;
     font-style: italic;
     text-align: center;
-    color: #555;
+    color: #666;
     margin-top: 0px;
 }
-.artist-label, p {
-    font-size: 16px;
+
+.artist-label {
+    font-size: 20px;
     text-align: center;
-    font-family: 'Lora', serif;
-    color: #333;
-    margin-top: 10px;
+    padding: 10px 0;
+    margin-top: 20px;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 500;
+}
+
+.stImage > img {
+    border: 6px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+p {
+    font-size: 16px;
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+    margin: 6px 0;
 }
 </style>
-
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">🎨 Masterpiece ID</div>', unsafe_allow_html=True)
