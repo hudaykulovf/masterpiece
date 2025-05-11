@@ -139,7 +139,11 @@ with col2:
     st.pyplot(fig)
     
 else:
-    st.markdown(f"- {name} — {conf:.2f}%")
+        st.markdown(f"""
+        <div style="text-align:center; margin-top:10px; font-family: 'Inter', sans-serif;">
+            <p style="font-size:18px; color:#444;">• {name} — {conf:.2f}%</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # SIDEBAR
 with st.sidebar:
