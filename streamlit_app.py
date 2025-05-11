@@ -5,6 +5,7 @@ import json
 from PIL import Image
 import base64
 from io import BytesIO
+import matplotlib.cm as cm
 
 # ---------- PAGE SETUP ----------
 st.set_page_config(page_title="Masterpiece ID", layout="centered")
@@ -49,7 +50,6 @@ p {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 </style>
-
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="title">🎨 Masterpiece ID</div>', unsafe_allow_html=True)
@@ -79,69 +79,11 @@ artist_info = {
     "Nicholas_Roerich": {"who": "Russian painter and mystic of Himalayan scenes", "period_style": "20th century – Symbolism, Spiritual Art", "examples": ["The Himalayas"]}
 }
 
-# ---------- IMAGE UPLOAD ----------
-uploaded_file = st.file_uploader("Upload the artwork", type=["jpg", "jpeg", "png"])
-if uploaded_file:
-    image = Image.open(uploaded_file).convert("RGB")
-    thumb = image.resize((500, 500))
-
-    def image_to_base64(img):
-        buf = BytesIO()
-        img.save(buf, format="PNG")
-        return base64.b64encode(buf.getvalue()).decode()
-
-    img_base64 = image_to_base64(thumb)
-    st.markdown(f"""
-    <div style="text-align:center;">
-        <img src="data:image/png;base64,{img_base64}" style="max-width:550px; border:8px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
-        <p style="font-size:12px; color:gray;">Uploaded Painting</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # ---------- PREDICTION ----------
-    image_resized = image.resize((512, 512))
-    img_array = np.array(image_resized) / 255.0
-    img_array = img_array[np.newaxis, ...]
-    prediction = model.predict(img_array)[0]
-    top_indices = prediction.argsort()[::-1][:3]
-
-    for idx, i in enumerate(top_indices):
-        name = class_names[i].replace("_", " ")
-        conf = prediction[i] * 100
-        info = artist_info.get(class_names[i], {})
-        who = info.get('who', '')
-        style = info.get('period_style', '')
-        example = ', '.join(info.get('examples', []))
-
-        if idx == 0:
-            st.markdown(f"""
-            <div style="text-align:center; margin-top:20px; font-family: 'Inter', sans-serif;">
-                <p style="font-size:22px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
-                <p style="font-size:16px; color:#555;">{who}</p>
-                <p style="font-size:16px; font-style: color:#777;">{style}</p>
-                <p style="font-size:16px; font-style: color:#999;">Famous Work: {example}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown(f"""
-            <div style="text-align:center; margin-top:10px; font-family: 'Inter', sans-serif;">
-                <p style="font-size:18px; color:#444;">• {name} — {conf:.2f}%</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-# ---------- SIDEBAR ----------
-with st.sidebar:
-    st.markdown("## 🖼️ About")
-    st.info("Masterpiece ID uses a fine-tuned InceptionV3 model trained on 1,000+ paintings from 10 legendary artists. Built with TensorFlow + Streamlit.")
-    st.markdown("### Supported Artists")
-    for name in class_names:
-        st.markdown(f"- {name.replace('_', ' ')}")
-
-# ---------- GRAD-CAM ----------
-st.markdown("### 🔥 What influenced this prediction?")
-heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10")
-display_gradcam(image_resized, heatmap)
-
+# ---------- UTILS ----------
+def image_to_base64(img):
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    return base64.b64encode(buf.getvalue()).decode()
 
 def make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10", pred_index=None):
     grad_model = tf.keras.models.Model(
@@ -165,16 +107,67 @@ def make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10", pred_
     return heatmap.numpy()
 
 def display_gradcam(image_pil, heatmap, alpha=0.5):
-    import matplotlib.pyplot as plt
-    import matplotlib.cm as cm
-
     heatmap_resized = Image.fromarray(np.uint8(255 * heatmap)).resize(image_pil.size)
     heatmap_np = np.array(heatmap_resized) / 255.0
+    colored_heatmap = cm.jet(heatmap_np)[:, :, :3]
+    colored_heatmap_img = Image.fromarray(np.uint8(colored_heatmap * 255))
 
-    colormap = cm.get_cmap("jet")
-    colored_heatmap = colormap(heatmap_np)
-    colored_heatmap = Image.fromarray((colored_heatmap[:, :, :3] * 255).astype(np.uint8))
-
-    blended = Image.blend(image_pil, colored_heatmap, alpha=alpha)
+    blended = Image.blend(image_pil, colored_heatmap_img, alpha=alpha)
     st.image(blended, caption="Grad-CAM: Focus of the model", use_column_width=True)
 
+# ---------- IMAGE UPLOAD ----------
+uploaded_file = st.file_uploader("Upload the artwork", type=["jpg", "jpeg", "png"])
+if uploaded_file:
+    image = Image.open(uploaded_file).convert("RGB")
+    thumb = image.resize((500, 500))
+    st.markdown(f"""
+    <div style="text-align:center;">
+        <img src="data:image/png;base64,{image_to_base64(thumb)}" style="max-width:550px; border:8px solid #ddd; border-radius:6px; box-shadow:0 4px 8px rgba(0,0,0,0.1);" />
+        <p style="font-size:12px; color:gray;">Uploaded Painting</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ---------- PREDICTION ----------
+    image_resized = image.resize((512, 512))
+    img_array = np.array(image_resized) / 255.0
+    img_array = img_array[np.newaxis, ...]
+
+    prediction = model.predict(img_array)[0]
+    top_indices = prediction.argsort()[::-1][:3]
+
+    for idx, i in enumerate(top_indices):
+        name = class_names[i].replace("_", " ")
+        conf = prediction[i] * 100
+        info = artist_info.get(class_names[i], {})
+        who = info.get('who', '')
+        style = info.get('period_style', '')
+        example = ', '.join(info.get('examples', []))
+
+        if idx == 0:
+            st.markdown(f"""
+            <div style="text-align:center; margin-top:20px; font-family: 'Inter', sans-serif;">
+                <p style="font-size:22px; margin-bottom:4px;">🎯 <b>{name}</b> — {conf:.2f}%</p>
+                <p style="font-size:16px; color:#555;">{who}</p>
+                <p style="font-size:16px; color:#777;">{style}</p>
+                <p style="font-size:16px; color:#999;">Famous Work: {example}</p>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style="text-align:center; margin-top:10px; font-family: 'Inter', sans-serif;">
+                <p style="font-size:18px; color:#444;">• {name} — {conf:.2f}%</p>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # ---------- GRAD-CAM ----------
+    st.markdown("### 🔥 What influenced this prediction?")
+    heatmap = make_gradcam_heatmap(img_array, model, last_conv_layer_name="mixed10")
+    display_gradcam(image_resized, heatmap)
+
+# ---------- SIDEBAR ----------
+with st.sidebar:
+    st.markdown("## 🖼️ About")
+    st.info("Masterpiece ID uses a fine-tuned InceptionV3 model trained on 1,000+ paintings from 10 legendary artists. Built with TensorFlow + Streamlit.")
+    st.markdown("### Supported Artists")
+    for name in class_names:
+        st.markdown(f"- {name.replace('_', ' ')}")
